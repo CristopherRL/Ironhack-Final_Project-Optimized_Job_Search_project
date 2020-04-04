@@ -66,20 +66,51 @@ def getting_data():
 
     ########################
     # Extracting info
+    last_job_page = n_pages * 25
+    print(last_job_page)
 
+    for p in range(0, last_job_page, 25):
     #for p in range(0,n_pages*25,25):
-    for p in range(0, 1):
+    #for p in range(0, 1):
 
+        print(p)
+
+        # Exploring each page with maximum 25 job posts
         JOB_URL = f'https://www.linkedin.com/jobs/search/?keywords={job_title}&location={location}&start={p}'
         browser.get(JOB_URL)
 
+        # Taking table of job posts
+        try:
+            tabla_izq = \
+                browser.find_element_by_xpath("/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]")
+        except:
+            tabla_izq = \
+                browser.find_element_by_xpath("/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]")
+        time.sleep(0.1)
+
+
+        # Getting quantity of job posts (i) to explore on this page >
+        if p < (last_job_page-25):
+            job_list = tabla_izq.text.split('Manage alerts\n')[1].split('Close\n')[0].split('ago')
+        # >> for last page there is another logic ( not 'Close')
+        else:
+            job_list = \
+                tabla_izq.text.split('Manage alerts\n')[1].split('Close\n')[0].split('Create alert for this search\n')[
+                    0].split('ago')
+        n_job_list = len(job_list) - 1
+        print(n_job_list)
+
+
         #for i in range(1, 26):
-        for i in range(1,6):
+        for i in range(1,n_job_list+1):
 
             # Selecting job post in order
-            job_post = browser.find_element_by_xpath\
+            try:
+                job_post = browser.find_element_by_xpath\
                 (f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')
-
+            except:
+                job_post = browser.find_element_by_xpath\
+                (f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')
             print(job_post.text)
             time.sleep(0.1)
             job_post.click()
@@ -91,12 +122,17 @@ def getting_data():
             print(f'{currentJobId}')
 
             # Extracting job information
-            job_post_right = browser.find_element_by_xpath\
-                ('/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[2]')
+            try:
+                job_post_right = browser.find_element_by_xpath\
+                    ('/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[2]')
+            except:
+                job_post_right = browser.find_element_by_xpath\
+                    ('/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[2]')
             job_post_right_content = job_post_right.text.split('\n', 15)
             print(len(job_post_right_content))
             print(f'{job_post_right_content}\n')
 
 
+print("fin")
 
 
