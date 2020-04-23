@@ -2,7 +2,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
-import selenium.common.exceptions as windowsclosed
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -18,8 +17,14 @@ import platform
 ######################################### IMPORTING DATA #################################################
 def getting_data():
 
-    # STARTING
-    print("""
+    os.system('clear')
+    repeat = '2' #default value
+    profile = pd.DataFrame({'A': []}) #empty df
+    job = pd.DataFrame({'A': []}) #empty df
+
+    while repeat == '2':
+        # STARTING
+        print("""
     *******************  OPTIMIZED JOB SEARCH ON LINKEDIN *******************
 
     Welcome!
@@ -31,27 +36,30 @@ def getting_data():
     1: Start a new search in LinkedIn
     2: Load a recorded search""")
 
-    option_selected = input("    > ")
+        option_selected = input("    > ")
 
-    if option_selected == '1':
-        df_profile, df_job = new_search()
-    elif option_selected == '2':
-        df_profile, df_job = recorded_search()
-    else:
-        raise ValueError("Sorry! The option selected is not allowed. Exit and try again")
+        if option_selected == '1':
+            profile, job, repeat = new_search()
+        elif option_selected == '2':
+            profile, job, repeat = recorded_search()
+        else:
+            raise ValueError("Sorry! The option selected is not allowed. Exit and try again")
 
-    input()
-    #os.system("pause")
+        print('\n   ... Click to continue')
+        input()
+        os.system('clear')
+        #os.system("pause")
 
-    return df_profile, df_job
+    return profile, job
+
 
 def new_search():
 
     ### SEARCH INFORMATION
     print("""\n
-        *********** NEW SEARCH :
-        Please enter your information to sign in on LINKEDIN and begin the search >>>
-        """)
+    *********** NEW SEARCH :
+    Please enter your information to sign in on LINKEDIN and begin the search >>>
+    """)
     SECRET_USER =           input("    EMAIL: ")
     SECRET_PASS = getpass.getpass("    PASSWORD: ")
 
@@ -64,6 +72,10 @@ def new_search():
     elif platform.system() == 'Windows':
         os.environ['PATH'] = f'{os.environ["PATH"]};C:\\Users\\x385645\\Documents\\Selenium'
 
+    # Defining current date time
+    now = datetime.now()
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+    now_file = now_str.replace(':', '.')
 
     ### SIGN IN - URL
     browser = webdriver.Chrome()
@@ -75,17 +87,17 @@ def new_search():
         # user box
         user = browser.find_element_by_xpath('/html/body/div/main/div/form/div[1]/input')
         user.send_keys(SECRET_USER)
-        time.sleep(1)
+        time.sleep(0.5)
 
         # password box
         password = browser.find_element_by_xpath('/html/body/div/main/div/form/div[2]/input')
         password.send_keys(SECRET_PASS)
-        time.sleep(1)
+        time.sleep(0.5)
 
         # sign in button
         sign_in = browser.find_element_by_class_name('login__form_action_container')
         sign_in.click()
-        time.sleep(1)
+        time.sleep(0.5)
 
     except:
         raise ValueError("  WRONG INFORMATION GIVEN!!! Please close and try again ... ")
@@ -109,6 +121,7 @@ def new_search():
     browser.maximize_window()
     html_body = WebDriverWait(browser, 1).until(EC.presence_of_element_located((By.XPATH, '/html/body')))
     html_body.send_keys(Keys.PAGE_DOWN)
+    time.sleep(1) #just to be sure
     linkedin_profile = browser.current_url.split('/')[4]
     print(f"""\n
     > LINKEDIN PROFILE: {linkedin_profile}
@@ -255,7 +268,23 @@ def new_search():
                                      ],
                               columns=['info']
                               )
-    print("     >>> PROFILE LOADED!!!\n")
+
+    # LINUX
+    now_file = now_str.replace(':', '.')
+    if platform.system() == 'Linux':
+        df_profile.to_csv(f'../data/raw/df_profile/df_profile_{linkedin_profile}_{now_file}.csv',
+                          sep=';',
+                          encoding='utf8'
+                          )
+    # WINDOWS
+    elif platform.system() == 'Windows':
+        df_profile.to_csv(f'..\\data\\raw\\df_profile\\df_profile_{linkedin_profile}_{now_file}.csv',
+                          sep=';',
+                          encoding='utf8'
+                          )
+
+
+    print("     >>> PROFILE LOADED AND SAVED!!!\n")
 
     ################################## LINKEDIN JOB SEARCH ######################################
 
@@ -263,83 +292,37 @@ def new_search():
     jobs_list_es = ['analista datos', 'cientifico datos', 'ingeniero datos']
     jobs_list_en = ['data analyst', 'data scientist', 'data engineer']
 
-    ### FUNCTIONS >
-
-    # number of pages with job posts considering job title given to thi
-    def n_pages_linkedin(browser, job_title_s, location):
-
-        JOB_URL = f'https://www.linkedin.com/jobs/search/?keywords={job_title_s}&location={location}&start=0'
-        browser.get(JOB_URL)
-
-        # Total results
-        results = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-                ((By.XPATH,"//small[@class='display-flex t-12 t-black--light t-normal']"))).text
-        print(f'    TOTAL RESULTS:{results}')
-        results = int(results.split(" ")[0])
-
-        if results > 25:
-            pages = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-                    ((By.XPATH,"//ul[@class='artdeco-pagination__pages artdeco-pagination__pages--number']")))
-            n_pages = int(pages.text.split('\n')[-1])
-            return n_pages  # ,results
-
-        else:
-            n_pages = 1
-            return n_pages  # ,results
-
-    # Iterator of JOB POSTS > the only way is considering XPATH with an iteration
-    def j_post(browser, i):
-        if WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-            job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-            ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-        elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-            job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-            ((By.XPATH,'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-
-        elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-            job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-            ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-
-        elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-            job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
-            ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-
-        return job_post
+    ### FUNCTIONS > AT THE END
 
     print(f"""\n\n    > LINKEDIN JOB SEARCH:""")
 
-    repeat_search = '0'
+    repeat_search = '0' #default value
+    df_jobs = pd.DataFrame({'A': []}) #empty df
     while repeat_search == '0':
 
         # location
         location_input = input("""
-        Please enter the location (CITY) where you'd like to search: 
-        > """)
+    Please enter the location (CITY) where you'd like to search: 
+    > """)
         location = location_input.capitalize()
 
 
-        jobs_version = input(f"""    Which version of job searching would you like to choose:
-            1: Spanish version > {jobs_list_es}
-            2: English version > {jobs_list_en}
-        > """)
+        jobs_version = input(f"""
+    Which version of job searching would you like to choose:
+    1: Spanish version > {jobs_list_es}
+    2: English version > {jobs_list_en}
+    > \n""")
         # Jobs search
+        jobs_list_lang = ""
         if   jobs_version== '1':
             jobs_list = ['analista datos', 'cientifico datos', 'ingeniero datos']
+            jobs_list_lang = 'es'
         elif jobs_version == '2':
             jobs_list = ['data analyst', 'data scientist', 'data engineer']
-
-        # Defining current date time
-        now = datetime.now()
-        now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+            jobs_list_lang = 'en'
 
 
-
-
-        # Creating empty df
+        # Creating empty df with columns
         df_jobs = pd.DataFrame(columns=['JOB TITLE',
                                         'LOCATION',
                                         'SEARCH DATETIME',
@@ -569,39 +552,43 @@ def new_search():
             print(f"""\n    WEB SCRAPPING FINISHED IN {dif} MINUTES!!!
     >>> {df_jobs.shape[0]} job posts have been loaded """)
             if df_jobs.shape[0]>0:
-                print('* last row of dataframe have been deleted by an error in web scrapping')
+                print('     * last row of dataframe have been deleted by an error in web scrapping')
             pass
-
+        df_rows = df_jobs.shape[0]
         ### Exporting to csv
+
         # LINUX
-        now_file = now_str.replace(':','.')
+
         if platform.system() == 'Linux':
-            df_jobs.to_csv(f'data/raw/df_jobs/df_jobs_{location}_{now_file}.csv',
+            df_jobs.to_csv(f'data/raw/df_jobs/df_jobs_{location}_{jobs_list_lang}_{now_file}_{df_rows}.csv',
                            sep=';',
                            encoding='utf8',
                            index=False,
                            )
         # WINDOWS
         elif platform.system() == 'Windows':
-            df_jobs.to_csv(f'\\data\\raw\\df_jobs\\df_jobs_{location}_{now_file}.csv',
+            df_jobs.to_csv(f'\\data\\raw\\df_jobs\\df_jobs_{location}_{jobs_list_lang}_{now_file}_{df_rows}.csv',
                            sep=';',
                            encoding='utf8',
                            index=False,
                            )
-        print(f'    >>> A csv file have been saved as: df_jobs_{location}_{now_file}.csv')
+        print(f'    >>> A csv file have been saved: data/raw/df_jobs/df_jobs_{location}_{jobs_list_lang}_{now_file}_{df_rows}.csv')
 
         #NEW QUESTION
         repeat_search = input("""\n     WOULD YOU LIKE TO REPEAT THIS SEARCH WITH A NEW LOCATION?
     0: YES, I would like to try again with a new city
     1: NO, I want to continue with this results and analyze the data
+    2: I prefer to come back to the first menu
     > """)
 
         if repeat_search == '0':
             print("""\n
     *********** NEW SEARCH :""")
-    # browser.close()
 
-    return df_profile , df_jobs
+    #Closing session
+    browser.close() #browser.quit()
+
+    return df_profile , df_jobs, repeat_search
 
 def recorded_search():
 
@@ -610,7 +597,9 @@ def recorded_search():
 
     ################################## LINKEDIN PROFILE ######################################
 
-    print(f"""\n\n> LINKEDIN PROFILE:
+    df_profile = pd.DataFrame({'A': []})  # empty df
+
+    print(f"""\n\n    >LINKEDIN PROFILE:
     Please select one of the Job Profile file writing the number at the end """)
 
     # Reading files
@@ -628,6 +617,7 @@ def recorded_search():
     i = 0
     for file in f:
         print(f'    {i}: {file}')
+        i += 1
     index = int(input('    >'))
     df_profile_file = f[index]
 
@@ -635,18 +625,20 @@ def recorded_search():
     if platform.system() == 'Linux':
         df_profile = pd.read_csv(f'data/raw/df_profile/{df_profile_file}',
                                  sep=';',
-                                 encoding='utf8'
+                                 encoding='utf8',
+                                 index_col=0
                                  )
 
     elif platform.system() == 'Windows':
         df_profile = pd.read_csv(f'\\data\\raw\\df_profile\\{df_profile_file}',
                                  sep=';',
-                                 encoding='utf8'
+                                 encoding='utf8',
+                                 index_col=0
                                  )
 
     ################################## RECORDED SEACH ######################################
 
-    print(f"""\n\n> LINKEDIN JOB SEARCH:
+    print(f"""\n\n    >LINKEDIN JOB SEARCH:
     Please select one of the Job Search file, writing the number at the end """)
 
     # Reading files
@@ -669,6 +661,7 @@ def recorded_search():
     df_profile_file = f[index]
 
     # Importing file
+    df_jobs = pd.DataFrame({'A': []}) #empty df
     if platform.system() == 'Linux':
         df_jobs = pd.read_csv(f'data/raw/df_jobs/{df_profile_file}',
                                  sep=';',
@@ -681,4 +674,62 @@ def recorded_search():
                                  encoding='utf8'
                                  )
 
-    return df_profile , df_jobs
+    print(f"""\n    FILES READY !!!
+    >>> {df_jobs.shape[0]} job posts have been loaded """)
+
+    # If I take the option of loading a file, this is because I dont want to come again to first menu
+    # If I'm here, I wanna ANALYSE
+    repeat_search = '1'
+
+    return df_profile , df_jobs, repeat_search
+
+######################################### FUNCTIONS #################################################
+
+# Iterator of JOB POSTS > the only way is considering XPATH with an iteration
+def j_post(browser, i):
+
+    if WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
+        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
+
+    elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
+        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        ((By.XPATH,'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
+
+    elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
+        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
+
+    elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
+        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
+
+
+    return job_post
+
+# number of pages with job posts considering job title given to thi
+def n_pages_linkedin(browser, job_title_s, location):
+
+    JOB_URL = f'https://www.linkedin.com/jobs/search/?keywords={job_title_s}&location={location}&start=0'
+    browser.get(JOB_URL)
+
+    # Total results
+    results = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+            ((By.XPATH,"//small[@class='display-flex t-12 t-black--light t-normal']"))).text
+    print(f'    TOTAL RESULTS:{results}')
+    results = int(results.split(" ")[0])
+
+    if results > 25:
+        pages = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+                ((By.XPATH,"//ul[@class='artdeco-pagination__pages artdeco-pagination__pages--number']")))
+        n_pages = int(pages.text.split('\n')[-1])
+        return n_pages  # ,results
+
+    else:
+        n_pages = 1
+        return n_pages  # ,results
+
