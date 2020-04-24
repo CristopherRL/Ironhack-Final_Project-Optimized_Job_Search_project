@@ -121,7 +121,7 @@ def new_search():
 
     ### PROFILE PAGE
     browser.maximize_window()
-    html_body = WebDriverWait(browser, 1).until(EC.presence_of_element_located((By.XPATH, '/html/body')))
+    html_body = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, '/html/body')))
     html_body.send_keys(Keys.PAGE_DOWN)
     time.sleep(1) #just to be sure
     linkedin_profile = browser.current_url.split('/')[4]
@@ -130,14 +130,14 @@ def new_search():
     """)
 
     ### HEADLINE
-    profile_headline = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
-                                                           ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
+    profile_headline = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+                        ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
     headline = profile_headline.text.lower()
     print('     Loading PROFILE > OK')
 
     ### OPEN STATUS
     profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
-                     ((By.XPATH,"//artdeco-carousel-content[@class='artdeco-carousel__content']")))
+                     ((By.XPATH,"//div[@class='artdeco-carousel__content']")))
     if profile_open.text.split(" ")[0] == 'Open':
         open_status = 'YES'
     else:
@@ -146,12 +146,12 @@ def new_search():
 
     ### ABOUT
     # show MORE > button "see more "
-    profile_show_about = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    profile_show_about = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
                             ((By.XPATH,"//span[@class='lt-line-clamp__line lt-line-clamp__line--last']")))
     ActionChains(browser).move_to_element(profile_show_about).perform()
     profile_show_about.click()
     # getting info
-    profile_about = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    profile_about = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
                    ((By.XPATH,"//p[@class='pv-about__summary-text mt4 t-14 ember-view']")))
     about = profile_about.text.lower()
     print('     Loading ABOUT > OK')
@@ -162,12 +162,12 @@ def new_search():
     html_body.send_keys(Keys.PAGE_DOWN * 5)
     time.sleep(0.2)
     # show MORE experiences > button "show more experience"
-    profile_show_experience = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    profile_show_experience = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
     ((By.XPATH,"//button[@class='pv-profile-section__see-more-inline pv-profile-section__text-truncate-toggle link link-without-hover-state']")))
     ActionChains(browser).move_to_element(profile_show_experience).perform()
     profile_show_experience.click()
     html_body.send_keys(Keys.PAGE_UP)
-    profile_experience = WebDriverWait(browser, 1).until(EC.presence_of_element_located((By.ID,'experience-section')))
+    profile_experience = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID,'experience-section')))
     # getting info: time experience
     pattern_t1 = 'Employment Duration\n(.*)\nLocation'
     time_experience = list(re.findall(pattern_t1, profile_experience.text))
@@ -191,7 +191,7 @@ def new_search():
     print('     Loading JOB EXPERIENCE > OK')
 
     ### EDUCATION
-    profile_education = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    profile_education = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
                    ((By.ID,'education-section')))
     # getting info: degrees
     pattern_e1 = 'degree name\n(.*)\n'
@@ -204,13 +204,13 @@ def new_search():
     ### SKILLS
 
     # show MORE skills > > button "show more..."
-    profile_more_skills = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    profile_more_skills = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
                    ((By.XPATH,"//button[@data-control-name='skill_details']")))
     ActionChains(browser).move_to_element(profile_more_skills).perform()
     profile_more_skills.click()
     html_body.send_keys(Keys.PAGE_UP)
     # skill table> text
-    profile_skills_details = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    profile_skills_details = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
     ((By.XPATH,"//section[@class='pv-profile-section pv-skill-categories-section artdeco-container-card ember-view']")))
     # Extracting skills
     skills = profile_skills_details.text.split("\n")
@@ -235,7 +235,7 @@ def new_search():
     print('     Loading SKILLS > OK')
 
     ### LANGUAGES
-    languages = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    languages = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
                    ((By.ID,'languages-expandable-content'))).text.split(' ')
     languages = [x.lower() for x in languages]
     print('     Loading LANGUAGES > OK')
@@ -244,7 +244,7 @@ def new_search():
     total_skills = sorted(list(set(degrees + fields + skills_clean + languages)))
 
     ### RAW PROFILE
-    profile_raw = WebDriverWait(browser, 1).until(EC.presence_of_element_located\
+    profile_raw = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
                    ((By.XPATH,"//main[@class='core-rail']"))).text.replace("\n"," ")
 
     ### DF PROFILE (1ST RESULT)
@@ -286,7 +286,7 @@ def new_search():
                           )
 
 
-    print("     >>> PROFILE LOADED AND SAVED!!!\n")
+    print(f"""     >>> PROFILE LOADED AND SAVED!!! > data/raw/df_profile/df_profile_{linkedin_profile}_{now_file}.csv\n""")
 
     ################################## LINKEDIN JOB SEARCH ######################################
 
@@ -590,7 +590,10 @@ def new_search():
     *********** NEW SEARCH :""")
 
     #Closing session
-    browser.close() #browser.quit()
+    try:
+        browser.close() #browser.quit()
+    except:
+        pass
 
     return df_profile , df_jobs, repeat_search
 
