@@ -87,7 +87,7 @@ def analyzing_data(df_profile, df_jobs):
     # LINKEDIN PROFILE
     profile_name = df_profile.loc['profile','info']
     profile_open = df_profile.loc['open new jobs', 'info']
-    if profile_open == True:
+    if profile_open == 'YES':
         open_to_jobs = "YES"
     else:
         open_to_jobs = "NO"

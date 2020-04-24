@@ -108,12 +108,14 @@ def new_search():
 
     ### MAIN PAGE
     # Click on profile button (up-rigth)
-    profile = browser.find_element_by_id('profile-nav-item')
+    profile = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID,\
+        'profile-nav-item')))
     # profile = browser.find_element_by_xpath('/html/body/header/div/nav/ul/li[6]/div/artdeco-dropdown/artdeco-dropdown-trigger/div')
     profile.click()
     # Click on View profile button
     # link_profile = browser.find_element_by_xpath('/html/body/header/div/nav/ul/li[6]/div/artdeco-dropdown/artdeco-dropdown-content/div/ul/li[1]/a/div[2]/span')
-    link_profile = browser.find_element_by_xpath("//span[@class='artdeco-button artdeco-button--tertiary artdeco-button--fluid']")
+    link_profile = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH,
+        "//span[@class='artdeco-button artdeco-button--tertiary artdeco-button--fluid']")))
     link_profile.click()
 
 
@@ -134,12 +136,12 @@ def new_search():
     print('     Loading PROFILE > OK')
 
     ### OPEN STATUS
-    profile_open = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
                      ((By.XPATH,"//artdeco-carousel-content[@class='artdeco-carousel__content']")))
     if profile_open.text.split(" ")[0] == 'Open':
-        open_status = True
+        open_status = 'YES'
     else:
-        open_status = False
+        open_status = 'NO'
     print('     Loading OPEN STATUS > OK')
 
     ### ABOUT
@@ -272,13 +274,13 @@ def new_search():
     # LINUX
     now_file = now_str.replace(':', '.')
     if platform.system() == 'Linux':
-        df_profile.to_csv(f'../data/raw/df_profile/df_profile_{linkedin_profile}_{now_file}.csv',
+        df_profile.to_csv(f'data/raw/df_profile/df_profile_{linkedin_profile}_{now_file}.csv',
                           sep=';',
                           encoding='utf8'
                           )
     # WINDOWS
     elif platform.system() == 'Windows':
-        df_profile.to_csv(f'..\\data\\raw\\df_profile\\df_profile_{linkedin_profile}_{now_file}.csv',
+        df_profile.to_csv(f'\\data\\raw\\df_profile\\df_profile_{linkedin_profile}_{now_file}.csv',
                           sep=';',
                           encoding='utf8'
                           )
@@ -311,7 +313,9 @@ def new_search():
     Which version of job searching would you like to choose:
     1: Spanish version > {jobs_list_es}
     2: English version > {jobs_list_en}
-    > \n""")
+    > """)
+        print('')
+
         # Jobs search
         jobs_list_lang = ""
         if   jobs_version== '1':
