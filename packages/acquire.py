@@ -123,26 +123,51 @@ def new_search():
     browser.maximize_window()
     html_body = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, '/html/body')))
     html_body.send_keys(Keys.PAGE_DOWN)
-    time.sleep(1) #just to be sure
+    time.sleep(3) #just to be sure
     linkedin_profile = browser.current_url.split('/')[4]
     print(f"""\n
     > LINKEDIN PROFILE: {linkedin_profile}
     """)
 
     ### HEADLINE
-    profile_headline = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
-                        ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
-    headline = profile_headline.text.lower()
-    print('     Loading PROFILE > OK')
+    try:
+        profile_headline = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+                            ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
+        headline = profile_headline.text.lower()
+        print('     Loading HEADLINE > OK')
+    except:
+        try:
+            html_body.send_keys(Keys.PAGE_DOWN)
+            profile_headline = \
+                WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+                ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
+            headline = profile_headline.text.lower()
+            print('     Loading HEADLINE > OK')
+        except:
+            headline = ""
+
 
     ### OPEN STATUS
-    profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
-                     ((By.XPATH,"//div[@class='artdeco-carousel__content']")))
-    if profile_open.text.split(" ")[0] == 'Open':
-        open_status = 'YES'
-    else:
-        open_status = 'NO'
-    print('     Loading OPEN STATUS > OK')
+    try:
+        profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+                         ((By.XPATH,"//div[@class='artdeco-carousel__content']")))
+        if profile_open.text.split(" ")[0] == 'Open':
+            open_status = 'YES'
+        else:
+            open_status = 'NO'
+        print('     Loading OPEN STATUS > OK')
+    except:
+        try:
+            html_body.send_keys(Keys.PAGE_DOWN)
+            profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+            ((By.XPATH, "//div[@class='artdeco-carousel__content']")))
+            if profile_open.text.split(" ")[0] == 'Open':
+                open_status = 'YES'
+            else:
+                open_status = 'NO'
+            print('     Loading OPEN STATUS > OK')
+        except:
+            open_status = ''
 
     ### ABOUT
     # show MORE > button "see more "
@@ -177,7 +202,9 @@ def new_search():
     pattern_n2 = 'title\n(.*)\n'
     name_experience2 = list(re.findall(pattern_n2, profile_experience.text.lower()))
     name_experience = name_experience1 + name_experience2
-    name_experience.remove('see more')
+    if 'see more' in name_experience:
+        name_experience.remove('see more')
+
     # Calculating years of experience
     y, m = 0, 0
     for t in time_experience:
@@ -695,19 +722,19 @@ def recorded_search():
 # Iterator of JOB POSTS > the only way is considering XPATH with an iteration
 def j_post(browser, i):
 
-    if WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    if WebDriverWait(browser, 2).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
         ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
-    elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    elif WebDriverWait(browser, 2).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
         ((By.XPATH,'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
-    elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    elif WebDriverWait(browser, 2).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
         ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
     elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \

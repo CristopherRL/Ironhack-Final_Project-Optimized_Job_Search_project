@@ -10,15 +10,15 @@ import matplotlib.pyplot as plt
 import json
 from datetime import datetime, timedelta
 import warnings
-
+import webbrowser
 
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS as SW_en
 from spacy.lang.es.stop_words import STOP_WORDS as SW_es
 
 from collections import Counter
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-from PIL import Image
+from wordcloud import WordCloud #, STOPWORDS, ImageColorGenerator
+#from PIL import Image
 
 ######################################### DEFINING PARAMETERS #################################################
 
@@ -96,6 +96,10 @@ def analyzing_data(df_profile, df_jobs):
         open_to_jobs = "NO"
     years_of_experience = df_profile.loc['total years', 'info']
     profile_headline = df_profile.loc['headline', 'info']
+    profile_fields_list = df_profile.loc['fields', 'info']
+    # profile_experience_list = df_profile.loc['experiences', 'info']
+    profile_skills_list = df_profile.loc['skills', 'info']
+    profile_languages_list = df_profile.loc['languages', 'info']
 
     # LINKEDIN JOB SEARCH
     location    = df_jobs.loc[0, 'LOCATION']
@@ -114,17 +118,22 @@ def analyzing_data(df_profile, df_jobs):
 
     *********** DATA ANALYSIS:
     
-    > LINKEDIN PROFILE: {profile_name}
-    Headline: {profile_headline}
+    > LINKEDIN PROFILE  : {profile_name}
+    Headline            : {profile_headline}
     Open to job offers? : {open_to_jobs}
-    Years of experience: {years_of_experience} years
+    Fields list         : {profile_fields_list}
+    Years of experience : {years_of_experience} years
+    Languages list      : {profile_languages_list}
 
     > LINKEDIN JOB SEARCH:
-    Location: {location}
-    Search Datetime: {date_search} 
-    Raw results: {result_jobs} 
-    Language: {search_language}
+    Location        : {location}
+    Search Datetime : {date_search} 
+    Raw results     : {result_jobs} 
+    Search language : {search_language}
        ... Click to continue""")
+
+    # Experience: {profile_experience_list}
+    # Skills: {profile_skills_list}
 
     #print('\r   ... Click to continue\r')
     input()
@@ -144,6 +153,7 @@ def analyzing_data(df_profile, df_jobs):
     print('\n    *** IDENTIFYING LANGUAGES ON EVERY JOB DESCRIPTION')
     df_jobs['Info Language'] = df_jobs['Job Description'].apply(lambda x: detect(x))
     unique_languages = list(df_jobs['Info Language'].unique())
+    print(f'    >>> {unique_languages}')
 
     # Identifying how many times is every job post repeated on the list
     unique_jobs = list(df_jobs['JOB TITLE'].unique())
@@ -174,7 +184,7 @@ def analyzing_data(df_profile, df_jobs):
 
     print('\n    *** MATCHING POST > PROFILE')
     # PROFILE > Coincidences with profile skills for each job:
-    profile_skills = clean_text(df_profile.loc['skills', 'info'])
+    profile_skills = clean_text(profile_skills_list)
     profile_skills = profile_skills.replace('[', '').replace(']', '').replace("'", "").split(', ')
     df_jobs['PROFILE coincidences'] = \
         df_jobs['Job info'].apply(lambda x:      coincidencias(profile_skills, clean_text(x)))
@@ -204,21 +214,24 @@ def analyzing_data(df_profile, df_jobs):
     html = df_top_jobs.to_html(escape=False)
     # write html to file
     if platform.system() == 'Linux':
-        text_file = \
-            open(f"data/results/TOP_LIST/top_{top}_jobs_in_{location}_search_{date_search_str}_{result_jobs}.html", "w")
+        html_file = f"data/results/TOP_LIST/top_{top}_jobs_in_{location}_search_{date_search_str}_{result_jobs}.html"
+        text_file = open(html_file, "w")
         text_file.write(html)
         text_file.close()
         print(f"""
     >>> Table has been saved as: top_{top}_jobs_in_{location}_search_{date_search_str}_{result_jobs}.html
     """)
+        webbrowser.open(html_file, new=0)
+
     elif platform.system() == 'Windows':
-        text_file = \
-            open(f"\\data\\results\\TOP_LIST\\top_{top}_jobs_in_{location}_search_{date_search_str}_{result_jobs}.html", "w")
+        html_file = f"\\data\\results\\TOP_LIST\\top_{top}_jobs_in_{location}_search_{date_search_str}_{result_jobs}.html"
+        text_file = open(html_file, "w")
         text_file.write(html)
         text_file.close()
         print(f"""\n    TOP JOB POST
     >>> Table has been saved as: top_{top}_jobs_in_{location}_search_{date_search_str}_{result_jobs}.html
     ... Click to continue""")
+        webbrowser.open(html_file, new=0)
 
     #print('\r   ... Click to continue\r')
     #input()
@@ -229,7 +242,9 @@ def analyzing_data(df_profile, df_jobs):
     print('''\n   *** APPLYING NLP\n
     ... Loading NLP libraries''')
     nlp_en = spacy.load('en_core_web_md')
+    print("     >>> en OK")
     nlp_es = spacy.load('es_core_news_md')
+    print("     >>> es OK")
 
     # Creating blacklist
     black_list = [location,
@@ -315,20 +330,55 @@ def analyzing_data(df_profile, df_jobs):
             # dict_word_freq_NN.update({f'{job_key_s}_{lang}': word_freq_NN})
             # dict_common_words_100_NN.update({f'{job_key_s}_{lang}': common_words_100_NN})
 
-            if platform.system() == 'Linux':
-                print(f'    >>> WORD_FREQ/dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json')
-                with open(f'data/results/WORD_FREQ/dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json', 'w') as fp:
-                    json.dump(dict_word_freq, fp)
-            elif platform.system() == 'Windows':
-                print(f'    >>> WORD_FREQ/dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json')
-                with open(f'data\\results\\WORD_FREQ\\dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json', 'w') as fp:
-                    json.dump(dict_word_freq, fp)
+            # if platform.system() == 'Linux':
+            #     json_file = f'data/results/WORD_FREQ/dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json'
+            #     print(f'    >>> WORD_FREQ/dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json')
+            #     with open(json_file, 'w') as fp:
+            #         json.dump(dict_word_freq, fp)
+            #     webbrowser.open(json_file, new=0)
+            # elif platform.system() == 'Windows':
+            #     json_file = f'data\\results\\WORD_FREQ\\dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json'
+            #     print(f'    >>> WORD_FREQ/dict_word_freq_{location}_{job_key_s}_{lang}_{date_search_str}_{result_jobs}.json')
+            #     with open(json_file, 'w') as fp:
+            #         json.dump(dict_word_freq, fp)
+            #     webbrowser.open(json_file, new=0)
 
-    print('\r   ... Click to continue\r')
+    if platform.system() == 'Linux':
+
+        # all words
+        json_file = f'data/results/WORD_FREQ/dict_word_freq_{location}_{date_search_str}_{result_jobs}.json'
+        print(f'    >>> WORD_FREQ/dict_word_freq_{location}_{date_search_str}_{result_jobs}.json')
+        with open(json_file, 'w') as fp:
+            json.dump(dict_word_freq, fp)
+        webbrowser.open(json_file, new=0)
+
+        # 100 common words
+        json_file_100 = f'data/results/WORD_FREQ/dict_common_words_100_{location}_{date_search_str}_{result_jobs}.json'
+        print(f'    >>> WORD_FREQ/dict_common_words_100_{location}_{date_search_str}_{result_jobs}.json')
+        with open(json_file_100, 'w') as fp:
+            json.dump(dict_common_words_100, fp)
+        webbrowser.open(json_file_100, new=0)
+
+    elif platform.system() == 'Windows':
+        # all words
+        json_file = f'data\\results\\WORD_FREQ\\dict_word_freq_{location}_{date_search_str}_{result_jobs}.json'
+        print(f'    >>> WORD_FREQ\\dict_word_freq_{location}_{date_search_str}_{result_jobs}.json')
+        with open(json_file, 'w') as fp:
+            json.dump(dict_word_freq, fp)
+        webbrowser.open(json_file, new=0)
+        # 100 common words
+        json_file_100 = f'data\\results\\WORD_FREQ\\dict_common_words_100_{location}_{date_search_str}_{result_jobs}.json'
+        print(f'    >>> WORD_FREQ\\dict_common_words_100_{location}_{date_search_str}_{result_jobs}.json')
+        with open(json_file_100, 'w') as fp:
+            json.dump(dict_common_words_100, fp)
+        webbrowser.open(json_file, new=0)
+
+
+    print('\r       ... Click to continue\r')
     input()
 
     ### ANALYZING JOBS > CLOUD
-    print(f"""\n    CLOUD WORDS""")
+    print(f"""\n    WORDS CLOUD """)
     for j in unique_jobs:
 
         job_key_w = job_key_generator(j)
@@ -351,7 +401,7 @@ def analyzing_data(df_profile, df_jobs):
 
             ax += 1
 
-        fig.suptitle(f'CLOUD WORD - {j}', fontsize=16)
+        fig.suptitle(f'WORDS CLOUD - {j}', fontsize=16)
         #fig.set_title(f'CLOUD WORD - {j}')
         plt.axis("off")
         fig.get_figure()
@@ -359,14 +409,13 @@ def analyzing_data(df_profile, df_jobs):
 
         # Saving
         if platform.system() == 'Linux':
-            fig.savefig(f'data/results/CLOUDS/worldcloud_{location}_{job_key_w}_{date_search_str}_{result_jobs}.png', quality=95, dpi=150)
+            fig.savefig(f'data/results/CLOUDS/wordcloud_{location}_{job_key_w}_{date_search_str}_{result_jobs}.png', quality=95, dpi=150)
             # wordcloud.to_file(f'../data/results/worldcloud_{job_lang}_{location}.png')
+            print(f'    >>> wordcloud_{location}_{job_key_w}_{date_search_str}_{result_jobs}.png')
 
         elif platform.system() == 'Windows':
-            fig.savefig(f'data\\results\\CLOUDS\\worldcloud_{location}_{job_key_w}_{date_search_str}_{result_jobs}.png', quality=95, dpi=150)
+            fig.savefig(f'data\\results\\CLOUDS\\wordcloud_{location}_{job_key_w}_{date_search_str}_{result_jobs}.png', quality=95, dpi=150)
             # wordcloud.to_file(f'..\\data\\results\\worldcloud_{job_lang}_{location}.png')
-
-        print(f'    >>> worldcloud_{location}_{job_key_w}_{date_search_str}_{result_jobs}.png')
 
 
     # Saving final df with analysis
@@ -384,7 +433,7 @@ def analyzing_data(df_profile, df_jobs):
                        encoding='utf8',
                        index=False,
                        )
-    print(f'''\n DATAFRAME
+    print(f'''\n\n    DATAFRAME
     >>> A csv file have been saved: data/raw/df_jobs/df_jobs_{location}_{search_lan}_{now_file}_{result_jobs}.csv''')
 
     #FINAL COMMENT
