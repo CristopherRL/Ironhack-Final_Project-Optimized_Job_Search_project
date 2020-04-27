@@ -39,7 +39,15 @@ def getting_data():
         option_selected = input("    > ")
 
         if option_selected == '1':
-            profile, job, repeat = new_search()
+            browser = open_selenium('https://www.linkedin.com/login')
+            driver = linkedin_session(browser)
+            if driver.current_url == "https://www.linkedin.com/feed/":
+                print("     >>> Successful login !")
+                profile, job, repeat = new_search(driver)
+            else:
+                print("     >>> User and/or password are wrong!!! Please try again")
+                driver.close()
+                repeat = '2'
         elif option_selected == '2':
             profile, job, repeat = recorded_search()
         else:
@@ -53,56 +61,12 @@ def getting_data():
     return profile, job
 
 
-def new_search():
-
-    ### SEARCH INFORMATION
-    print("""\n
-    *********** NEW SEARCH :
-    Please enter your information to sign in on LINKEDIN and begin the search >>>
-    """)
-    SECRET_USER =           input("    EMAIL: ")
-    SECRET_PASS = getpass.getpass("    PASSWORD: ")
-
-
-    ### SELENIUM DRIVER
-    # LINUX
-    if platform.system() == 'Linux':
-        os.environ['PATH'] = f'{os.environ["PATH"]}:/home/cristopherrl/Documents/program/selenium/drivers/'
-
-    elif platform.system() == 'Windows':
-        os.environ['PATH'] = f'{os.environ["PATH"]};C:\\Users\\x385645\\Documents\\Selenium'
-
+def new_search(browser):
+    ### PARAMETERS ###
     # Defining current date time
     now = datetime.now()
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
     now_file = now_str.replace(':', '.')
-
-    ### SIGN IN - URL
-    browser = webdriver.Chrome()
-    URL = 'https://www.linkedin.com/login'
-    browser.get(URL)
-    time.sleep(0.5)
-
-    try:
-        # user box
-        user = browser.find_element_by_xpath('/html/body/div/main/div/form/div[1]/input')
-        user.send_keys(SECRET_USER)
-        time.sleep(0.5)
-
-        # password box
-        password = browser.find_element_by_xpath('/html/body/div/main/div/form/div[2]/input')
-        password.send_keys(SECRET_PASS)
-        time.sleep(0.5)
-
-        # sign in button
-        sign_in = browser.find_element_by_class_name('login__form_action_container')
-        sign_in.click()
-        time.sleep(0.5)
-
-    except:
-        raise ValueError("  WRONG INFORMATION GIVEN!!! Please close and try again ... ")
-
-
 
     ################################## LINKEDIN PROFILE ######################################
 
@@ -624,6 +588,9 @@ def new_search():
 
     return df_profile , df_jobs, repeat_search
 
+
+
+
 def recorded_search():
 
     ### SEARCH INFORMATION
@@ -721,29 +688,48 @@ def recorded_search():
 
 # Iterator of JOB POSTS > the only way is considering XPATH with an iteration
 def j_post(browser, i):
+    w=5
+    if WebDriverWait(browser, w).until(EC.presence_of_element_located \
+    ((By.XPATH,f"//ul[@class='jobs-search-results__list artdeco-list']/li[{i}/div/div[1]/div/h3/a]"))):
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
+        ((By.XPATH,f"//ul[@class='jobs-search-results__list artdeco-list']/li[{i}/div/div[1]/div/h3/a]")))
+        
+        #((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a')))
+        ## "//ul[@class='jobs-search-results__list artdeco-list']/li[{i}/div/div[1]/div/h3/a]"
+        # "//form[@id='loginForm']/input[1]"
+        #'/html/body/div[8]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[1]/div/div[1]/div/h3/a'
+        # /html/body/div[8]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[1]/div/div[1]/div/h3/a
 
-    if WebDriverWait(browser, 2).until(EC.presence_of_element_located \
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
+    ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a'))):
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a')))
+
+
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
         ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
-    elif WebDriverWait(browser, 2).until(EC.presence_of_element_located \
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
         ((By.XPATH,'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
-    elif WebDriverWait(browser, 2).until(EC.presence_of_element_located \
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 2).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
         ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
-    elif WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
     ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, 1).until(EC.presence_of_element_located \
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
         ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
 
 
+
     return job_post
+
 
 # number of pages with job posts considering job title given to thi
 def n_pages_linkedin(browser, job_title_s, location):
@@ -767,3 +753,53 @@ def n_pages_linkedin(browser, job_title_s, location):
         n_pages = 1
         return n_pages  # ,results
 
+
+def open_selenium(URL):
+
+    ### SELENIUM DRIVER
+    # LINUX
+    if platform.system() == 'Linux':
+        os.environ['PATH'] = f'{os.environ["PATH"]}:/home/cristopherrl/Documents/program/selenium/drivers/'
+
+    elif platform.system() == 'Windows':
+        os.environ['PATH'] = f'{os.environ["PATH"]};C:\\Users\\x385645\\Documents\\Selenium'
+
+    ### SIGN IN - URL
+    browser = webdriver.Chrome()
+    browser.get(URL)
+
+    return browser
+
+
+def linkedin_session(browser):
+
+    ### SEARCH INFORMATION
+    print("""\n
+    *********** NEW SEARCH :
+    Please enter your information to sign in on LINKEDIN and begin the search >>>
+    """)
+    SECRET_USER = input("    EMAIL: ")
+    SECRET_PASS = getpass.getpass("    PASSWORD: ")
+
+    try:
+        # user box
+        user = browser.find_element_by_xpath('/html/body/div/main/div/form/div[1]/input')
+        user.send_keys(SECRET_USER)
+        time.sleep(0.5)
+
+        # password box
+        password = browser.find_element_by_xpath('/html/body/div/main/div/form/div[2]/input')
+        password.send_keys(SECRET_PASS)
+        time.sleep(0.5)
+
+        # sign in button
+        sign_in = browser.find_element_by_class_name('login__form_action_container')
+        sign_in.click()
+        time.sleep(0.5)
+
+    except:
+        raise ValueError("  WRONG INFORMATION GIVEN!!! Please close and try again ... ")
+
+    time.sleep(0.5)
+
+    return browser
