@@ -85,7 +85,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', -1)
 
 ######################################### ANALYZING DATA #################################################
-def analyzing_data(df_profile, df_jobs):
+def analyzing_data(df_profile, df_jobs, option_selected):
 
     # LINKEDIN PROFILE
     profile_name = df_profile.loc['profile','info']
@@ -184,8 +184,16 @@ def analyzing_data(df_profile, df_jobs):
 
     print('\n    *** MATCHING POST > PROFILE')
     # PROFILE > Coincidences with profile skills for each job:
-    profile_skills = clean_text(profile_skills_list)
-    profile_skills = profile_skills.replace('[', '').replace(']', '').replace("'", "").split(', ')
+    if   option_selected == 1:
+        clean_skills_list = []
+        for text in profile_skills_list:
+            text = clean_text(text)
+            clean_skills_list.append(text)
+        profile_skills = clean_skills_list
+    elif option_selected == 2:
+        profile_skills = clean_text(profile_skills_list)
+        profile_skills = profile_skills.replace('[', '').replace(']', '').replace("'", "").split(', ')
+
     df_jobs['PROFILE coincidences'] = \
         df_jobs['Job info'].apply(lambda x:      coincidencias(profile_skills, clean_text(x)))
     df_jobs['PROFILE coincidences_list'] = \
@@ -479,8 +487,8 @@ def clean_text(text):
 
 
 def job_key_generator(job):
-    job_key_s = ""
     job_name_splitted = job.split(" ")
+    job_key_s = ""
     for string in job_name_splitted:
         job_key_s += string[0].upper()
 

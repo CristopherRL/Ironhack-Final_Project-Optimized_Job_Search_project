@@ -48,8 +48,10 @@ def getting_data():
                 print("     >>> User and/or password are wrong!!! Please try again")
                 driver.close()
                 repeat = '2'
+            option = 1
         elif option_selected == '2':
             profile, job, repeat = recorded_search()
+            option = 2
         else:
             raise ValueError("Sorry! The option selected is not allowed. Exit and try again")
 
@@ -58,7 +60,7 @@ def getting_data():
         os.system('clear')
         #os.system("pause")
 
-    return profile, job
+    return profile, job, option
 
 
 def new_search(browser):
@@ -688,44 +690,55 @@ def recorded_search():
 
 # Iterator of JOB POSTS > the only way is considering XPATH with an iteration
 def j_post(browser, i):
+
+    w=10
+
+    block = WebDriverWait(browser, w).until(EC.presence_of_element_located \
+    ((By.XPATH,f"//ul[@class='jobs-search-results__list artdeco-list']/li[{i}]")))
+
+    job_post = block.find_element_by_xpath(f"div/div[1]/div/h3/a")
+
+    #job_post.click()
+
+    return job_post
+
+
+# Iterator of JOB POSTS > the only way is considering XPATH with an iteration
+def j_post_old(browser, i):
+
     w=5
+
     if WebDriverWait(browser, w).until(EC.presence_of_element_located \
-    ((By.XPATH,f"//ul[@class='jobs-search-results__list artdeco-list']/li[{i}/div/div[1]/div/h3/a]"))):
+        ((By.XPATH,f'/html/body/div[8]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a'))):
         job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
-        ((By.XPATH,f"//ul[@class='jobs-search-results__list artdeco-list']/li[{i}/div/div[1]/div/h3/a]")))
-        
-        #((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a')))
-        ## "//ul[@class='jobs-search-results__list artdeco-list']/li[{i}/div/div[1]/div/h3/a]"
-        # "//form[@id='loginForm']/input[1]"
-        #'/html/body/div[8]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[1]/div/div[1]/div/h3/a'
-        # /html/body/div[8]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[1]/div/div[1]/div/h3/a
+        ((By.XPATH,f'/html/body/div[8]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a')))
 
     elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
-    ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a'))):
+        ((By.XPATH,f'/html/body/div[8]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/div[1]/div/h3/a'))):
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[8]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/div[1]/div/h3/a')))
+
+
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a'))):
         job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
         ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a')))
 
+    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/div[1]/div/h3/a'))):
+        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
+        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/div[1]/div/h3/a')))
+
 
     elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
-    ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
+        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a'))):
         job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
+        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/div[1]/div/h3/a')))
 
     elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
-    ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
+        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/div[1]/div/h3/a'))):
         job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
-        ((By.XPATH,'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-
-    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
-    ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-
-    elif WebDriverWait(browser, w).until(EC.presence_of_element_located \
-    ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a'))):
-        job_post = WebDriverWait(browser, w).until(EC.presence_of_element_located \
-        ((By.XPATH,f'/html/body/div[6]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/artdeco-entity-lockup/artdeco-entity-lockup-content/h3/a')))
-
+        ((By.XPATH,f'/html/body/div[5]/div[4]/div[3]/section[1]/div[2]/div/div/div[1]/div[2]/div[2]/ul/li[{i}]/div/div[1]/div/h3/a')))
 
 
     return job_post
