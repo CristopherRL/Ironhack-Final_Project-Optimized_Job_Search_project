@@ -15,6 +15,8 @@ import webbrowser
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS as SW_en
 from spacy.lang.es.stop_words import STOP_WORDS as SW_es
+from spacy.lang.ca.stop_words import STOP_WORDS as SW_ca
+from spacy.lang.de.stop_words import STOP_WORDS as SW_de
 
 from collections import Counter
 from wordcloud import WordCloud #, STOPWORDS, ImageColorGenerator
@@ -247,12 +249,24 @@ def analyzing_data(df_profile, df_jobs, option_selected):
     ### ANALYZING JOBS > NLP
 
     # Loading libraries
+    spacy_languages = []
     print('''\n   *** APPLYING NLP\n
     ... Loading NLP libraries''')
-    nlp_en = spacy.load('en_core_web_md')
-    print("     >>> en OK")
-    nlp_es = spacy.load('es_core_news_md')
-    print("     >>> es OK")
+    if   'en' in unique_languages:
+        nlp_en = spacy.load('en_core_web_md')
+        spacy_languages.append('en')
+        print("     >>> en OK")
+    elif 'es' in unique_languages:
+        nlp_es = spacy.load('es_core_news_md')
+        spacy_languages.append('es')
+        print("     >>> es OK")
+    # elif 'ca' in unique_languages:
+    #     nlp_ca = spacy.load('es_core_news_md')
+    #     print("     >>> es OK")
+    elif 'de' in unique_languages:
+        nlp_ca = spacy.load('de_core_news_sm')
+        spacy_languages.append('de')
+        print("     >>> es OK")
 
     # Creating blacklist
     black_list = [location,
@@ -282,7 +296,7 @@ def analyzing_data(df_profile, df_jobs, option_selected):
     for job in unique_jobs:
         job_key_s = job_key_generator(job)
 
-        for lang in unique_languages:
+        for lang in spacy_languages:
 
             # CORPUS
             filter_job = df_jobs['JOB TITLE'] == job

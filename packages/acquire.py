@@ -70,24 +70,27 @@ def new_search(browser):
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
     now_file = now_str.replace(':', '.')
 
+    # wating time
+    w = 10
+
     ################################## LINKEDIN PROFILE ######################################
 
     ### MAIN PAGE
     # Click on profile button (up-rigth)
-    profile = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID,\
+    profile = WebDriverWait(browser, w).until(EC.presence_of_element_located((By.ID,\
         'profile-nav-item')))
     # profile = browser.find_element_by_xpath('/html/body/header/div/nav/ul/li[6]/div/artdeco-dropdown/artdeco-dropdown-trigger/div')
     profile.click()
     # Click on View profile button
     # link_profile = browser.find_element_by_xpath('/html/body/header/div/nav/ul/li[6]/div/artdeco-dropdown/artdeco-dropdown-content/div/ul/li[1]/a/div[2]/span')
-    link_profile = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH,
+    link_profile = WebDriverWait(browser, w).until(EC.presence_of_element_located((By.XPATH,
         "//span[@class='artdeco-button artdeco-button--tertiary artdeco-button--fluid']")))
     link_profile.click()
 
 
     ### PROFILE PAGE
     browser.maximize_window()
-    html_body = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, '/html/body')))
+    html_body = WebDriverWait(browser, w).until(EC.presence_of_element_located((By.XPATH, '/html/body')))
     html_body.send_keys(Keys.PAGE_DOWN)
     time.sleep(3) #just to be sure
     linkedin_profile = browser.current_url.split('/')[4]
@@ -97,15 +100,14 @@ def new_search(browser):
 
     ### HEADLINE
     try:
-        profile_headline = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+        profile_headline = WebDriverWait(browser, w).until(EC.presence_of_element_located \
                             ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
         headline = profile_headline.text.lower()
         print('     Loading HEADLINE > OK')
     except:
         try:
             html_body.send_keys(Keys.PAGE_DOWN)
-            profile_headline = \
-                WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+            profile_headline = WebDriverWait(browser, w).until(EC.presence_of_element_located \
                 ((By.XPATH, "//h2[@class='mt1 t-18 t-black t-normal']")))
             headline = profile_headline.text.lower()
             print('     Loading HEADLINE > OK')
@@ -115,7 +117,7 @@ def new_search(browser):
 
     ### OPEN STATUS
     try:
-        profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+        profile_open = WebDriverWait(browser, w).until(EC.presence_of_element_located \
                          ((By.XPATH,"//div[@class='artdeco-carousel__content']")))
         if profile_open.text.split(" ")[0] == 'Open':
             open_status = 'YES'
@@ -125,7 +127,7 @@ def new_search(browser):
     except:
         try:
             html_body.send_keys(Keys.PAGE_DOWN)
-            profile_open = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+            profile_open = WebDriverWait(browser, w).until(EC.presence_of_element_located \
             ((By.XPATH, "//div[@class='artdeco-carousel__content']")))
             if profile_open.text.split(" ")[0] == 'Open':
                 open_status = 'YES'
@@ -137,12 +139,12 @@ def new_search(browser):
 
     ### ABOUT
     # show MORE > button "see more "
-    profile_show_about = WebDriverWait(browser, 3).until(EC.presence_of_element_located \
+    profile_show_about = WebDriverWait(browser, w).until(EC.presence_of_element_located \
                             ((By.XPATH,"//span[@class='lt-line-clamp__line lt-line-clamp__line--last']")))
     ActionChains(browser).move_to_element(profile_show_about).perform()
     profile_show_about.click()
     # getting info
-    profile_about = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
+    profile_about = WebDriverWait(browser, w).until(EC.presence_of_element_located\
                    ((By.XPATH,"//p[@class='pv-about__summary-text mt4 t-14 ember-view']")))
     about = profile_about.text.lower()
     print('     Loading ABOUT > OK')
@@ -184,7 +186,7 @@ def new_search(browser):
     print('     Loading JOB EXPERIENCE > OK')
 
     ### EDUCATION
-    profile_education = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
+    profile_education = WebDriverWait(browser, w).until(EC.presence_of_element_located\
                    ((By.ID,'education-section')))
     # getting info: degrees
     pattern_e1 = 'degree name\n(.*)\n'
@@ -194,16 +196,17 @@ def new_search(browser):
     fields = re.findall(pattern_e2, profile_education.text.lower())
     print('     Loading EDUCATION > OK')
 
-    ### SKILLS
 
+
+    ### SKILLS
     # show MORE skills > > button "show more..."
-    profile_more_skills = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
+    profile_more_skills = WebDriverWait(browser, w).until(EC.presence_of_element_located\
                    ((By.XPATH,"//button[@data-control-name='skill_details']")))
     ActionChains(browser).move_to_element(profile_more_skills).perform()
     profile_more_skills.click()
     html_body.send_keys(Keys.PAGE_UP)
     # skill table> text
-    profile_skills_details = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
+    profile_skills_details = WebDriverWait(browser, w).until(EC.presence_of_element_located\
     ((By.XPATH,"//section[@class='pv-profile-section pv-skill-categories-section artdeco-container-card ember-view']")))
     # Extracting skills
     skills = profile_skills_details.text.split("\n")
@@ -228,7 +231,7 @@ def new_search(browser):
     print('     Loading SKILLS > OK')
 
     ### LANGUAGES
-    languages = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
+    languages = WebDriverWait(browser, w).until(EC.presence_of_element_located\
                    ((By.ID,'languages-expandable-content'))).text.split(' ')
     languages = [x.lower() for x in languages]
     print('     Loading LANGUAGES > OK')
@@ -237,7 +240,7 @@ def new_search(browser):
     total_skills = sorted(list(set(degrees + fields + skills_clean + languages)))
 
     ### RAW PROFILE
-    profile_raw = WebDriverWait(browser, 3).until(EC.presence_of_element_located\
+    profile_raw = WebDriverWait(browser, w).until(EC.presence_of_element_located\
                    ((By.XPATH,"//main[@class='core-rail']"))).text.replace("\n"," ")
 
     ### DF PROFILE (1ST RESULT)
