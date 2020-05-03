@@ -2,9 +2,9 @@
 ### OPTJOBS: Optimazed Job Search
 
 ### **Status**
-This is my Ironhack Data Analytics Final Project
+This is my Data Analytics Final Project in Ironhack, which comes to combine many fields learned on this bootcamp.
 
-###**One-liner**
+### **One-liner**
 This project consist in recognize the main features of a specific job search in order to apply to job offers that fit better to our profile
 
 ### **Technology stack**
@@ -39,7 +39,7 @@ Return values: When a Web Scrapping or a recorded search is loaded, then we'll h
 ```
 
 ### **ToDo**
-Next steps, features planned, known bugs (shortlist).
+Next steps: SKLEARN - Adjust best data profile for your LinkedIn profile // NETWORKX - Create a network with job names related, to consider every neighbor in each search
 
 ### **Contact info**
 if you need some help or you want to give some feedback, please write to this email: cristopher.rojas.lepe@gmail.com
